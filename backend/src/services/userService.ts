@@ -1,6 +1,6 @@
 import { AppError } from '../middleware/errorHandler.js';
 import { userRepository } from '../repositories/userRepository.js';
-import { CreateUserInput, UpdateUserInput } from '../lib/validation.js';
+import { CreateUserInput, UpdateUserInput, UserPhoneInput } from '../lib/validation.js';
 import { hashPassword } from '../lib/security.js';
 
 export class UserService {
@@ -39,7 +39,6 @@ export class UserService {
       email: input.email,
       name: input.name,
       passwordHash: hashPassword(input.password),
-      isVerified: input.isVerified ?? false,
     });
   }
 
@@ -61,7 +60,6 @@ export class UserService {
     return userRepository.update(id, {
       ...(input.email ? { email: input.email } : {}),
       ...(input.name ? { name: input.name } : {}),
-      ...(typeof input.isVerified === 'boolean' ? { isVerified: input.isVerified } : {}),
       ...(input.password ? { passwordHash: hashPassword(input.password) } : {}),
     });
   }
@@ -69,6 +67,82 @@ export class UserService {
   async deleteUser(id: string) {
     await this.getUserById(id);
     return userRepository.delete(id);
+  }
+
+  // Phone management
+  async addPhoneNumber(userId: string, input: UserPhoneInput) {
+    // Verify user exists
+    await this.getUserById(userId);
+
+    // Check if phone number already exists for this user
+    const existingPhones = await userRepository.listPhonesByUserId(userId);
+    if (existingPhones.some((p) => p.number === input.number)) {
+      throw new AppError(
+        'PHONE_ALREADY_EXISTS',
+        'This phone number is already added for this user',
+        409,
+      );
+    }
+
+    return userRepository.createPhone(userId, {
+      number: input.number,
+      label: input.label,
+    });
+  }
+
+  async updatePhoneNumber(userId: string, phoneId: string, input: Partial<UserPhoneInput>) {
+    // Verify user exists
+    await this.getUserById(userId);
+
+    // Verify phone belongs to user
+    const phone = await userRepository.findPhoneById(phoneId);
+    if (!phone || phone.userId !== userId) {
+      throw new AppError('PHONE_NOT_FOUND', 'Phone number not found for this user', 404);
+    }
+
+    // Check if new number already exists (if number is being updated)
+    if (input.number && input.number !== phone.number) {
+      const existingPhones = await userRepository.listPhonesByUserId(userId);
+      if (existingPhones.some((p) => p.number === input.number)) {
+        throw new AppError(
+          'PHONE_ALREADY_EXISTS',
+          'This phone number is already added for this user',
+          409,
+        );
+      }
+    }
+
+    const updateData: { number?: string; label?: string; verified?: boolean } = {};
+    if (input.number) {
+      updateData.number = input.number;
+    }
+    if (input.label !== undefined) {
+      updateData.label = input.label || undefined;
+    }
+    if (input.verified !== undefined) {
+      updateData.verified = input.verified;
+    }
+
+    return userRepository.updatePhone(phoneId, updateData);
+  }
+
+  async deletePhoneNumber(userId: string, phoneId: string) {
+    // Verify user exists
+    await this.getUserById(userId);
+
+    // Verify phone belongs to user
+    const phone = await userRepository.findPhoneById(phoneId);
+    if (!phone || phone.userId !== userId) {
+      throw new AppError('PHONE_NOT_FOUND', 'Phone number not found for this user', 404);
+    }
+
+    return userRepository.deletePhone(phoneId);
+  }
+
+  async listPhoneNumbers(userId: string) {
+    // Verify user exists
+    await this.getUserById(userId);
+    return userRepository.listPhonesByUserId(userId);
   }
 }
 

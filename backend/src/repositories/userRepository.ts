@@ -6,7 +6,16 @@ const publicUserSelect = {
   id: true,
   email: true,
   name: true,
-  isVerified: true,
+  phones: {
+    select: {
+      id: true,
+      number: true,
+      label: true,
+      verified: true,
+      createdAt: true,
+    },
+    orderBy: { createdAt: 'asc' },
+  },
   createdAt: true,
   updatedAt: true,
 } satisfies Prisma.UserSelect;
@@ -16,7 +25,6 @@ const authUserSelect = {
   email: true,
   name: true,
   passwordHash: true,
-  isVerified: true,
   createdAt: true,
   updatedAt: true,
 } satisfies Prisma.UserSelect;
@@ -44,13 +52,26 @@ export class UserRepository {
     });
   }
 
+  async findPhoneById(phoneId: string) {
+    return prisma.userPhone.findUnique({
+      where: { id: phoneId },
+      select: {
+        id: true,
+        userId: true,
+        number: true,
+        label: true,
+        verified: true,
+        createdAt: true,
+      },
+    });
+  }
+
   async create(data: Omit<CreateUserInput, 'password'> & { passwordHash: string }): Promise<PublicUser> {
     return prisma.user.create({
       data: {
         email: data.email,
         name: data.name,
         passwordHash: data.passwordHash,
-        isVerified: data.isVerified ?? false,
       },
       select: publicUserSelect,
     });
@@ -68,6 +89,68 @@ export class UserRepository {
     return prisma.user.delete({
       where: { id },
       select: publicUserSelect,
+    });
+  }
+
+  // Phone management
+  async createPhone(userId: string, data: { number: string; label?: string }) {
+    return prisma.userPhone.create({
+      data: {
+        userId,
+        number: data.number,
+        label: data.label || null,
+      },
+      select: {
+        id: true,
+        userId: true,
+        number: true,
+        label: true,
+        verified: true,
+        createdAt: true,
+      },
+    });
+  }
+
+  async updatePhone(phoneId: string, data: { number?: string; label?: string; verified?: boolean }) {
+    return prisma.userPhone.update({
+      where: { id: phoneId },
+      data,
+      select: {
+        id: true,
+        userId: true,
+        number: true,
+        label: true,
+        verified: true,
+        createdAt: true,
+      },
+    });
+  }
+
+  async deletePhone(phoneId: string) {
+    return prisma.userPhone.delete({
+      where: { id: phoneId },
+      select: {
+        id: true,
+        userId: true,
+        number: true,
+        label: true,
+        verified: true,
+        createdAt: true,
+      },
+    });
+  }
+
+  async listPhonesByUserId(userId: string) {
+    return prisma.userPhone.findMany({
+      where: { userId },
+      select: {
+        id: true,
+        number: true,
+        label: true,
+        verified: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: 'asc' },
     });
   }
 }

@@ -67,6 +67,49 @@ v1Router.delete(
 );
 
 // ============================================
+// USER PHONE ROUTES
+// ============================================
+
+// List user phone numbers
+v1Router.get(
+  '/users/:userId/phones',
+  mockAuth,
+  requireAuth,
+  validatePathParams(userIdSchema),
+  userController.listPhoneNumbers,
+);
+
+// Add phone number
+v1Router.post(
+  '/users/:userId/phones',
+  mockAuth,
+  requireAuth,
+  validatePathParams(userIdSchema),
+  validateRequest(z.object({ number: z.string().min(1), label: z.string().optional() })),
+  userController.addPhoneNumber,
+);
+
+// Update phone number
+const phoneIdSchema = z.object({ userId: z.string().cuid(), phoneId: z.string().cuid() });
+v1Router.put(
+  '/users/:userId/phones/:phoneId',
+  mockAuth,
+  requireAuth,
+  validatePathParams(phoneIdSchema),
+  validateRequest(z.object({ number: z.string().min(1).optional(), label: z.string().optional(), verified: z.boolean().optional() })),
+  userController.updatePhoneNumber,
+);
+
+// Delete phone number
+v1Router.delete(
+  '/users/:userId/phones/:phoneId',
+  mockAuth,
+  requireAuth,
+  validatePathParams(phoneIdSchema),
+  userController.deletePhoneNumber,
+);
+
+// ============================================
 // GROUP ROUTES
 // ============================================
 

@@ -9,7 +9,7 @@ datasource db {
 
 // ============================================
 // DOMAIN MODELS FOR PHASE 2
-// Money is stored in minor units (cents) as Int
+// Money values are stored exactly as provided by clients
 // ============================================
 
 enum GroupMemberRole {
@@ -33,7 +33,6 @@ model User {
   email             String          @unique
   name              String
   passwordHash      String
-  isVerified        Boolean         @default(false)
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
 
@@ -57,7 +56,8 @@ model UserPhone {
   verified  Boolean  @default(false)
   createdAt DateTime @default(now())
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  groupMemberships  GroupMember[]
 
   @@unique([userId, number])
   @@index([userId])
@@ -83,23 +83,26 @@ model GroupMember {
   id        String          @id @default(cuid())
   groupId   String
   userId    String
+  selectedPhoneId String?
   role      GroupMemberRole @default(MEMBER)
   joinedAt  DateTime        @default(now())
   isActive  Boolean         @default(true)
 
-  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  group         Group      @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user          User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  selectedPhone UserPhone? @relation(fields: [selectedPhoneId], references: [id], onDelete: SetNull)
 
   @@unique([groupId, userId])
   @@index([groupId])
   @@index([userId])
+  @@index([selectedPhoneId])
 }
 
 model Expense {
   id           String          @id @default(cuid())
   groupId      String
   paidByUserId String
-  totalAmount  Int             // in minor units (cents)
+  totalAmount  Int
   currency     String          @default("USD")
   description  String
   splitType    SplitType       @default(EQUAL)
@@ -121,7 +124,7 @@ model ExpenseShare {
   id         String   @id @default(cuid())
   expenseId  String
   userId     String
-  amountOwed Int      // in minor units (cents)
+  amountOwed Int
   createdAt  DateTime @default(now())
 
   expense Expense @relation(fields: [expenseId], references: [id], onDelete: Cascade)
@@ -137,7 +140,7 @@ model Settlement {
   groupId    String
   fromUserId String
   toUserId   String
-  amount     Int          // in minor units (cents)
+  amount     Int
   createdAt  DateTime     @default(now())
 
   group       Group         @relation(fields: [groupId], references: [id], onDelete: Cascade)
@@ -157,7 +160,7 @@ model LedgerEntry {
   eventType    LedgerEventType
   fromUserId   String
   toUserId     String
-  amount       Int      // in minor units (cents)
+  amount       Int
   referenceId  String   // expenseId or settlementId
   expenseId    String?
   settlementId String?  @unique
@@ -180,7 +183,7 @@ model PairBalance {
   groupId        String
   debtorUserId   String
   creditorUserId String
-  netAmount      Int      // in minor units (cents) - positive = debtor owes creditor
+  netAmount      Int      // positive = debtor owes creditor
   updatedAt      DateTime @updatedAt
 
   group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)

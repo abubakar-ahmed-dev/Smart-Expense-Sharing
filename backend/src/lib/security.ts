@@ -9,7 +9,6 @@ export interface AuthTokenPayload {
   sub: string;
   email: string;
   name: string;
-  isVerified: boolean;
   iat: number;
   exp: number;
 }
@@ -20,7 +19,6 @@ export interface AuthSessionData {
     id: string;
     email: string;
     name: string;
-    isVerified: boolean;
   };
 }
 
@@ -105,7 +103,7 @@ export function verifyAuthToken(token: string): AuthTokenPayload | null {
 
   try {
     const parsed = JSON.parse(base64UrlDecode(encodedPayload)) as AuthTokenPayload;
-    if (!parsed.sub || !parsed.email || !parsed.name || typeof parsed.isVerified !== 'boolean') {
+    if (!parsed.sub || !parsed.email || !parsed.name) {
       return null;
     }
     if (parsed.exp <= Math.floor(Date.now() / 1000)) {

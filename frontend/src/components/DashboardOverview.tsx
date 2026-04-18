@@ -12,7 +12,7 @@ interface OverviewData {
 }
 
 function toCurrency(amount: number): string {
-  return (amount / 100).toFixed(2);
+  return amount.toString();
 }
 
 function errorToText(error: unknown): string {

@@ -24,7 +24,7 @@ export interface ExpenseFormValidation {
 export function validateExpenseFormDraft(draft: ExpenseFormDraft): ExpenseFormValidation {
   const totalAmount = Number(draft.totalAmount);
   if (!Number.isInteger(totalAmount) || totalAmount <= 0) {
-    return { ok: false, message: 'Total amount must be a positive integer (minor units).' };
+    return { ok: false, message: 'Total amount must be a positive integer.' };
   }
 
   if (!draft.description.trim()) {

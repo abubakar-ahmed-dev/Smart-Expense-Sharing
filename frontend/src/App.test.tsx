@@ -10,7 +10,6 @@ const mockUsers = [
     id: 'user-1',
     email: 'alice@example.com',
     name: 'Alice',
-    isVerified: true,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
@@ -18,7 +17,6 @@ const mockUsers = [
     id: 'user-2',
     email: 'bob@example.com',
     name: 'Bob',
-    isVerified: false,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
@@ -76,7 +74,6 @@ describe('App', () => {
       userId: 'user-1',
       email: 'alice@example.com',
       name: 'Alice',
-      isVerified: true,
     });
 
     const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {

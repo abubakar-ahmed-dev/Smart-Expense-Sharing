@@ -3,7 +3,6 @@ export interface AuthSession {
   userId: string;
   email: string;
   name: string;
-  isVerified: boolean;
 }
 
 const SESSION_KEY = 'smart-expense-sharing:session';
@@ -16,7 +15,7 @@ export function readSession(): AuthSession | null {
     }
 
     const parsed = JSON.parse(raw) as AuthSession;
-    if (!parsed.token || !parsed.userId || !parsed.email || !parsed.name || typeof parsed.isVerified !== 'boolean') {
+    if (!parsed.token || !parsed.userId || !parsed.email || !parsed.name) {
       return null;
     }
 

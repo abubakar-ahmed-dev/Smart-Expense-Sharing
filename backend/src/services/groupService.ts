@@ -72,6 +72,15 @@ export class GroupService {
     // Verify user exists and is not already a member
     await userRepository.findById(input.userId);
 
+    const selectedPhone = await userRepository.findPhoneById(input.phoneId);
+    if (!selectedPhone || selectedPhone.userId !== input.userId) {
+      throw new AppError(
+        'INVALID_MEMBER_PHONE',
+        'Selected contact number does not belong to this user',
+        400,
+      );
+    }
+
     const existingMember = await groupRepository.findMember(groupId, input.userId);
     if (existingMember) {
       throw new AppError(

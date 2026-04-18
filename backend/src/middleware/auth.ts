@@ -12,7 +12,6 @@ export interface AuthUser {
   id: string;
   email: string;
   name: string;
-  isVerified: boolean;
   role: 'ADMIN' | 'MEMBER';
 }
 
@@ -38,7 +37,6 @@ export function mockAuth(req: Request, _res: Response, next: NextFunction) {
       id: payload.sub,
       email: payload.email,
       name: payload.name,
-      isVerified: payload.isVerified,
       role: 'MEMBER',
     };
     return next();
@@ -56,7 +54,7 @@ export function mockAuth(req: Request, _res: Response, next: NextFunction) {
     return next(new AppError('UNAUTHORIZED', 'Invalid X-User-Role', 401));
   }
 
-  req.user = { id: userId, email: userId, name: userId, isVerified: false, role };
+  req.user = { id: userId, email: userId, name: userId, role };
   next();
 }
 

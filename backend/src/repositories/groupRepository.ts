@@ -16,6 +16,7 @@ export class GroupRepository {
         members: {
           include: {
             user: true,
+            selectedPhone: true,
           },
         },
       },
@@ -41,7 +42,7 @@ export class GroupRepository {
       include: {
         members: {
           where: { isActive: true },
-          include: { user: true },
+          include: { user: true, selectedPhone: true },
         },
       },
       orderBy: { createdAt: 'desc' },
@@ -89,6 +90,7 @@ export class GroupRepository {
       data: {
         groupId,
         userId: data.userId,
+        selectedPhoneId: data.phoneId,
         role: data.role,
       },
     });
@@ -118,7 +120,7 @@ export class GroupRepository {
   async getMembers(groupId: string) {
     return prisma.groupMember.findMany({
       where: { groupId, isActive: true },
-      include: { user: true },
+      include: { user: true, selectedPhone: true },
       orderBy: { joinedAt: 'desc' },
     });
   }

@@ -56,7 +56,6 @@ export default function UsersPage() {
                 <tr>
                   <th>Name</th>
                   <th>Email</th>
-                  <th>Status</th>
                   <th>Joined</th>
                 </tr>
               </thead>
@@ -68,11 +67,6 @@ export default function UsersPage() {
                       {user.id === session?.userId && <span className="badge">You</span>}
                     </td>
                     <td>{user.email}</td>
-                    <td>
-                      <span className={`status ${user.isVerified ? 'verified' : 'unverified'}`}>
-                        {user.isVerified ? '✓ Verified' : 'Unverified'}
-                      </span>
-                    </td>
                     <td>{new Date(user.createdAt).toLocaleDateString()}</td>
                   </tr>
                 ))}

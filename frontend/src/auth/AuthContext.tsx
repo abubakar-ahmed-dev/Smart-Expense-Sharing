@@ -23,13 +23,12 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
-function mapToSession(session: { token: string; user: { id: string; email: string; name: string; isVerified: boolean } }): AuthSession {
+function mapToSession(session: { token: string; user: { id: string; email: string; name: string } }): AuthSession {
   return {
     token: session.token,
     userId: session.user.id,
     email: session.user.email,
     name: session.user.name,
-    isVerified: session.user.isVerified,
   };
 }
 

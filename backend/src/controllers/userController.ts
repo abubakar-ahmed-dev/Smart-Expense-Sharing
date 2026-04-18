@@ -63,3 +63,58 @@ export async function deleteUser(req: Request, res: Response, next: NextFunction
     next(error);
   }
 }
+
+// Phone management endpoints
+export async function addPhoneNumber(req: Request, res: Response, next: NextFunction) {
+  try {
+    const userId = typeof req.params.userId === 'string' ? req.params.userId : req.params.userId[0];
+    const phone = await userService.addPhoneNumber(userId, req.body);
+    res.status(201).json({
+      success: true,
+      data: phone,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function updatePhoneNumber(req: Request, res: Response, next: NextFunction) {
+  try {
+    const userId = typeof req.params.userId === 'string' ? req.params.userId : req.params.userId[0];
+    const phoneId = typeof req.params.phoneId === 'string' ? req.params.phoneId : req.params.phoneId[0];
+    const phone = await userService.updatePhoneNumber(userId, phoneId, req.body);
+    res.status(200).json({
+      success: true,
+      data: phone,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function deletePhoneNumber(req: Request, res: Response, next: NextFunction) {
+  try {
+    const userId = typeof req.params.userId === 'string' ? req.params.userId : req.params.userId[0];
+    const phoneId = typeof req.params.phoneId === 'string' ? req.params.phoneId : req.params.phoneId[0];
+    const phone = await userService.deletePhoneNumber(userId, phoneId);
+    res.status(200).json({
+      success: true,
+      data: phone,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function listPhoneNumbers(req: Request, res: Response, next: NextFunction) {
+  try {
+    const userId = typeof req.params.userId === 'string' ? req.params.userId : req.params.userId[0];
+    const phones = await userService.listPhoneNumbers(userId);
+    res.status(200).json({
+      success: true,
+      data: phones,
+    });
+  } catch (error) {
+    next(error);
+  }
+}

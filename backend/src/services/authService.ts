@@ -14,10 +14,9 @@ export class AuthService {
       email: input.email,
       name: input.name,
       passwordHash: hashPassword(input.password),
-      isVerified: input.isVerified ?? false,
     });
 
-    return this.createSession(user.id, user.email, user.name, user.isVerified);
+    return this.createSession(user.id, user.email, user.name);
   }
 
   async login(input: LoginInput): Promise<AuthSessionData> {
@@ -31,22 +30,20 @@ export class AuthService {
       throw new AppError('INVALID_CREDENTIALS', 'Invalid email or password', 401);
     }
 
-    return this.createSession(authUser.id, authUser.email, authUser.name, authUser.isVerified);
+    return this.createSession(authUser.id, authUser.email, authUser.name);
   }
 
-  private createSession(userId: string, email: string, name: string, isVerified: boolean): AuthSessionData {
+  private createSession(userId: string, email: string, name: string): AuthSessionData {
     return {
       token: signAuthToken({
         sub: userId,
         email,
         name,
-        isVerified,
       }),
       user: {
         id: userId,
         email,
         name,
-        isVerified,
       },
     };
   }

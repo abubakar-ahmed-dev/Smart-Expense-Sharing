@@ -5,14 +5,12 @@ export const createUserSchema = z.object({
   email: z.string().email('Invalid email format'),
   name: z.string().min(1, 'Name is required').max(255),
   password: z.string().min(6, 'Password must be at least 6 characters long'),
-  isVerified: z.boolean().optional(),
 });
 
 export const updateUserSchema = z.object({
   email: z.string().email('Invalid email format').optional(),
   name: z.string().min(1, 'Name is required').max(255).optional(),
   password: z.string().min(6, 'Password must be at least 6 characters long').optional(),
-  isVerified: z.boolean().optional(),
 });
 
 export const loginSchema = z.object({
@@ -38,6 +36,7 @@ export const updateGroupSchema = z.object({
 // Group member schemas
 export const addGroupMemberSchema = z.object({
   userId: z.string().cuid('Invalid user ID'),
+  phoneId: z.string().cuid('Invalid phone ID'),
   role: z.enum(['ADMIN', 'MEMBER']).default('MEMBER'),
 });
 

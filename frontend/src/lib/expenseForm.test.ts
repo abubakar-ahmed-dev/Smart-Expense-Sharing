@@ -52,4 +52,44 @@ describe('validateExpenseFormDraft', () => {
     expect(result.ok).toBe(false);
     expect(result.message).toContain('PERCENTAGE');
   });
+
+  it('accepts a valid exact split payload', () => {
+    const result = validateExpenseFormDraft({
+      paidByUserId: 'user-a',
+      totalAmount: '1000',
+      currency: 'USD',
+      description: 'Taxi',
+      splitType: 'EXACT',
+      participants: [
+        { userId: 'user-a', amount: '400' },
+        { userId: 'user-b', amount: '600' },
+      ],
+    });
+
+    expect(result.ok).toBe(true);
+    expect(result.payload?.participants).toEqual([
+      { userId: 'user-a', amount: 400 },
+      { userId: 'user-b', amount: 600 },
+    ]);
+  });
+
+  it('accepts a valid percentage split payload', () => {
+    const result = validateExpenseFormDraft({
+      paidByUserId: 'user-a',
+      totalAmount: '2500',
+      currency: 'USD',
+      description: 'Hotel',
+      splitType: 'PERCENTAGE',
+      participants: [
+        { userId: 'user-a', percentage: '50' },
+        { userId: 'user-b', percentage: '50' },
+      ],
+    });
+
+    expect(result.ok).toBe(true);
+    expect(result.payload?.participants).toEqual([
+      { userId: 'user-a', percentage: 50 },
+      { userId: 'user-b', percentage: 50 },
+    ]);
+  });
 });

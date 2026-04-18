@@ -41,9 +41,17 @@ export interface User {
   id: string;
   email: string;
   name: string;
-  isVerified: boolean;
+  phones: UserPhone[];
   createdAt: string;
   updatedAt: string;
+}
+
+export interface UserPhone {
+  id: string;
+  number: string;
+  label?: string;
+  verified: boolean;
+  createdAt: string;
 }
 
 export interface CreateUserPayload {
@@ -61,7 +69,6 @@ export interface AuthSessionUser {
   id: string;
   email: string;
   name: string;
-  isVerified: boolean;
 }
 
 export interface AuthSessionResponse {
@@ -81,9 +88,11 @@ export interface GroupMember {
   id: string;
   groupId: string;
   userId: string;
+  selectedPhoneId?: string | null;
   role: 'ADMIN' | 'MEMBER';
   joinedAt: string;
   isActive: boolean;
+  selectedPhone?: UserPhone | null;
   user: User;
 }
 
@@ -224,6 +233,38 @@ export const apiClient = {
       method: 'POST',
       body: JSON.stringify(payload),
     }),
+  
+  // Phone management
+  fetchUserPhones: (userId: string, auth?: AuthContext) =>
+    request<UserPhone[]>(`/users/${userId}/phones`, {}, auth),
+  addPhoneNumber: (userId: string, number: string, label?: string, auth?: AuthContext) =>
+    request<UserPhone>(
+      `/users/${userId}/phones`,
+      {
+        method: 'POST',
+        body: JSON.stringify({ number, label }),
+      },
+      auth,
+    ),
+  updatePhoneNumber: (userId: string, phoneId: string, updates: Partial<{ number: string; label: string; verified: boolean }>, auth?: AuthContext) =>
+    request<UserPhone>(
+      `/users/${userId}/phones/${phoneId}`,
+      {
+        method: 'PUT',
+        body: JSON.stringify(updates),
+      },
+      auth,
+    ),
+  deletePhoneNumber: (userId: string, phoneId: string, auth?: AuthContext) =>
+    request<UserPhone>(
+      `/users/${userId}/phones/${phoneId}`,
+      {
+        method: 'DELETE',
+      },
+      auth,
+    ),
+
+  // Groups
   fetchGroups: (auth?: AuthContext) => request<Group[]>('/groups', {}, auth),
   createGroup: (name: string, auth: AuthContext) =>
     request<Group>(
@@ -235,12 +276,27 @@ export const apiClient = {
       auth,
     ),
   fetchGroupMembers: (groupId: string, auth?: AuthContext) => request<GroupMember[]>(`/groups/${groupId}/members`, {}, auth),
-  addGroupMember: (groupId: string, userId: string, role: 'ADMIN' | 'MEMBER', auth: AuthContext) =>
+  addGroupMember: (
+    groupId: string,
+    userId: string,
+    phoneId: string,
+    role: 'ADMIN' | 'MEMBER',
+    auth: AuthContext,
+  ) =>
     request<GroupMember>(
       `/groups/${groupId}/members`,
       {
         method: 'POST',
-        body: JSON.stringify({ userId, role }),
+        body: JSON.stringify({ userId, phoneId, role }),
+      },
+      auth,
+    ),
+  updateGroupMemberRole: (groupId: string, memberId: string, role: 'ADMIN' | 'MEMBER', auth: AuthContext) =>
+    request<GroupMember>(
+      `/groups/${groupId}/members/${memberId}/role`,
+      {
+        method: 'PUT',
+        body: JSON.stringify({ role }),
       },
       auth,
     ),
