@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ApiClientError, Group, Expense, apiClient, UserBalanceSummary } from '../lib/api';
+import { ApiClientError, Group, Expense, apiClient } from '../lib/api';
 import { useAuth } from '../auth/AuthContext';
 
 interface OverviewData {
@@ -46,15 +46,13 @@ export function DashboardOverview() {
         setLoading(true);
         setError(null);
 
-        // Fetch groups
         const groups = await apiClient.fetchGroups(auth);
         setData((prev) => ({
           ...prev,
           activeGroupsCount: groups.length,
-          activeGroups: groups.slice(0, 5), // Show top 5 groups
+          activeGroups: groups.slice(0, 5),
         }));
 
-        // Calculate balances and expenses
         let totalOwed = 0;
         let totalToReceive = 0;
         const allExpenses: Expense[] = [];
@@ -64,10 +62,8 @@ export function DashboardOverview() {
             const balances = await apiClient.fetchGroupBalances(group.id, auth);
             const expenses = await apiClient.fetchGroupExpenses(group.id, auth);
 
-            // Aggregate expenses for recent activity
             allExpenses.push(...expenses);
 
-            // Calculate personal balances
             balances.forEach((balance) => {
               if (balance.debtorUserId === session?.userId) {
                 totalOwed += balance.netAmount;
@@ -77,12 +73,10 @@ export function DashboardOverview() {
               }
             });
           } catch (err) {
-            // Silently skip group if there's an error
             console.error(`Error loading group ${group.id}:`, err);
           }
         }
 
-        // Sort expenses by date and get recent 10
         const recentExpenses = allExpenses
           .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
           .slice(0, 10);
@@ -117,7 +111,7 @@ export function DashboardOverview() {
     return (
       <div className="page-content">
         <section className="page-section empty-state-section">
-          <h2>Welcome to Smart Expense Sharing! 👋</h2>
+          <h2>Welcome to Smart Expense Sharing!</h2>
           <p>Get started by creating your first group.</p>
           <p className="text-muted">Groups let you manage shared expenses with friends and family.</p>
           <div className="empty-state-actions">
@@ -134,22 +128,20 @@ export function DashboardOverview() {
     <div className="page-content">
       {error && <div className="alert alert-error">{error}</div>}
 
-      {/* Quick Actions */}
       <section className="page-section">
         <div className="quick-actions">
           <button className="action-btn action-btn-primary" onClick={() => navigate('/groups')}>
-            ➕ Create Group
+            Create Group
           </button>
           <button className="action-btn action-btn-secondary" onClick={() => navigate('/expenses')}>
-            💰 Add Expense
+            Add Expense
           </button>
           <button className="action-btn action-btn-secondary" onClick={() => navigate('/settlements')}>
-            ✅ Record Settlement
+            Record Settlement
           </button>
         </div>
       </section>
 
-      {/* Overview Cards */}
       <section className="page-section">
         <h2>Financial Overview</h2>
         <div className="overview-grid">
@@ -184,7 +176,6 @@ export function DashboardOverview() {
         </div>
       </section>
 
-      {/* Active Groups */}
       <section className="page-section">
         <h2>Your Groups</h2>
         {data.activeGroups.length === 0 ? (
@@ -211,7 +202,6 @@ export function DashboardOverview() {
         )}
       </section>
 
-      {/* Recent Expenses */}
       <section className="page-section">
         <h2>Recent Expenses</h2>
         {data.recentExpenses.length === 0 ? (

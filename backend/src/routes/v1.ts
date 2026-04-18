@@ -22,26 +22,14 @@ import {
 import { healthController } from '../controllers/healthController.js';
 
 export const v1Router = Router();
-
-// Health check (no auth required)
 v1Router.get('/health', healthController);
-
-// ============================================
-// AUTH ROUTES
-// ============================================
 
 v1Router.post('/auth/login', validateRequest(loginSchema), authController.login);
 v1Router.post('/auth/signup', validateRequest(createUserSchema), authController.signup);
 
-// ============================================
-// USER ROUTES
-// ============================================
-
-// Public user endpoints
 v1Router.get('/users', mockAuth, requireAuth, userController.listUsers);
 v1Router.post('/users', mockAuth, requireAuth, validateRequest(createUserSchema), userController.createUser);
 
-// Parameterized user endpoints
 const userIdSchema = z.object({ userId: z.string().cuid() });
 v1Router.get(
   '/users/:userId',
@@ -66,11 +54,7 @@ v1Router.delete(
   userController.deleteUser,
 );
 
-// ============================================
-// USER PHONE ROUTES
-// ============================================
 
-// List user phone numbers
 v1Router.get(
   '/users/:userId/phones',
   mockAuth,
@@ -79,7 +63,7 @@ v1Router.get(
   userController.listPhoneNumbers,
 );
 
-// Add phone number
+
 v1Router.post(
   '/users/:userId/phones',
   mockAuth,
@@ -89,7 +73,7 @@ v1Router.post(
   userController.addPhoneNumber,
 );
 
-// Update phone number
+
 const phoneIdSchema = z.object({ userId: z.string().cuid(), phoneId: z.string().cuid() });
 v1Router.put(
   '/users/:userId/phones/:phoneId',
@@ -100,7 +84,7 @@ v1Router.put(
   userController.updatePhoneNumber,
 );
 
-// Delete phone number
+
 v1Router.delete(
   '/users/:userId/phones/:phoneId',
   mockAuth,
@@ -109,14 +93,9 @@ v1Router.delete(
   userController.deletePhoneNumber,
 );
 
-// ============================================
-// GROUP ROUTES
-// ============================================
 
-// Group listing (public)
 v1Router.get('/groups', mockAuth, requireAuth, groupController.listGroups);
 
-// User's groups (requires auth)
 v1Router.get(
   '/users/:userId/groups',
   mockAuth,
@@ -125,7 +104,7 @@ v1Router.get(
   groupController.getUserGroups,
 );
 
-// Create group (requires auth)
+
 v1Router.post(
   '/groups',
   mockAuth,
@@ -134,7 +113,7 @@ v1Router.post(
   groupController.createGroup,
 );
 
-// Get group details
+
 const groupIdSchema = z.object({ groupId: z.string().cuid() });
 v1Router.get(
   '/groups/:groupId',
@@ -144,7 +123,7 @@ v1Router.get(
   groupController.getGroupById,
 );
 
-// Update group
+
 v1Router.put(
   '/groups/:groupId',
   mockAuth,
@@ -154,7 +133,7 @@ v1Router.put(
   groupController.updateGroup,
 );
 
-// Delete group
+
 v1Router.delete(
   '/groups/:groupId',
   mockAuth,
@@ -163,11 +142,7 @@ v1Router.delete(
   groupController.deleteGroup,
 );
 
-// ============================================
-// GROUP MEMBER ROUTES
-// ============================================
 
-// Get group members
 v1Router.get(
   '/groups/:groupId/members',
   mockAuth,
@@ -176,7 +151,7 @@ v1Router.get(
   groupController.getGroupMembers,
 );
 
-// Add group member (requires auth)
+
 v1Router.post(
   '/groups/:groupId/members',
   mockAuth,
@@ -186,7 +161,7 @@ v1Router.post(
   groupController.addGroupMember,
 );
 
-// Remove group member (requires auth)
+
 const memberIdSchema = z.object({
   groupId: z.string().cuid(),
   memberId: z.string().cuid(),
@@ -199,7 +174,7 @@ v1Router.delete(
   groupController.removeGroupMember,
 );
 
-// Update group member role (requires auth)
+
 v1Router.put(
   '/groups/:groupId/members/:memberId/role',
   mockAuth,
@@ -209,9 +184,6 @@ v1Router.put(
   groupController.updateGroupMemberRole,
 );
 
-// ============================================
-// EXPENSE ROUTES (PHASE 4)
-// ============================================
 
 const expenseIdSchema = z.object({
   groupId: z.string().cuid(),
@@ -243,9 +215,6 @@ v1Router.get(
   expenseController.getGroupExpenseById,
 );
 
-// ============================================
-// BALANCE ROUTES (PHASE 5)
-// ============================================
 
 const groupUserIdSchema = z.object({
   groupId: z.string().cuid(),
@@ -268,9 +237,6 @@ v1Router.get(
   balanceController.getUserBalanceSummary,
 );
 
-// ============================================
-// SETTLEMENT ROUTES (PHASE 5)
-// ============================================
 
 const settlementIdSchema = z.object({
   groupId: z.string().cuid(),

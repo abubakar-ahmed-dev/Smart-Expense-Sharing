@@ -1082,12 +1082,10 @@ button:disabled {
 
 .group-badge {
   border: 1px solid #dce7ee;
-  border-radius: 999px;
-  padding: 8px 12px;
+  border-radius: 9px;
+  padding: 18px;
   background: #fff6df;
   font-weight: 700;
-  justify-content: center;
-  align-items: center;
 }
 
 .member-add-form {

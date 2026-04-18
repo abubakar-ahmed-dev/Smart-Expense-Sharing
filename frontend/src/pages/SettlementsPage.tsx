@@ -38,7 +38,6 @@ export default function SettlementsPage() {
 
   const auth = { token: session?.token };
 
-  // Load groups
   useEffect(() => {
     const loadGroups = async () => {
       try {
@@ -60,7 +59,6 @@ export default function SettlementsPage() {
     void loadGroups();
   }, [session?.token]);
 
-  // Load group members and settlements
   useEffect(() => {
     if (!selectedGroupId) return;
 
@@ -141,13 +139,6 @@ export default function SettlementsPage() {
   };
 
   const currentGroup = groups.find((g) => g.id === selectedGroupId);
-  const memberMap = members.reduce(
-    (acc, member) => {
-      acc[member.userId] = member.user.name;
-      return acc;
-    },
-    {} as Record<string, string>,
-  );
 
   if (loading) {
     return <div className="page-content">Loading settlements...</div>;
@@ -175,7 +166,6 @@ export default function SettlementsPage() {
 
       {currentGroup && (
         <>
-          {/* Record Settlement Form */}
           <section className="page-section">
             <h2>Record Settlement</h2>
             <form onSubmit={handleRecordSettlement} className="settlement-form">
@@ -237,7 +227,6 @@ export default function SettlementsPage() {
             </form>
           </section>
 
-          {/* Settlement History */}
           <section className="page-section">
             <h2>Settlement History</h2>
             {settlements.length === 0 ? (

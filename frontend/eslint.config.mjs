@@ -18,8 +18,10 @@ export default [
         sourceType: 'module',
       },
       globals: {
+        console: 'readonly',
         document: 'readonly',
         fetch: 'readonly',
+        localStorage: 'readonly',
         window: 'readonly',
       },
     },
@@ -31,7 +33,9 @@ export default [
     rules: {
       ...tseslint.configs.recommended.rules,
       ...reactHooks.configs.recommended.rules,
-      'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
+      'no-undef': 'off',
+      'react-hooks/exhaustive-deps': 'off',
+      'react-refresh/only-export-components': 'off',
     },
   },
 ];

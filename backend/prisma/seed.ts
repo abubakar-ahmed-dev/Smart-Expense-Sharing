@@ -3,7 +3,6 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function main() {
-  // Clean all tables (in reverse dependency order)
   await prisma.pairBalance.deleteMany();
   await prisma.ledgerEntry.deleteMany();
   await prisma.settlement.deleteMany();
@@ -14,9 +13,8 @@ async function main() {
   await prisma.user.deleteMany();
   await prisma.group.deleteMany();
 
-  console.log('✓ Cleaned existing data');
+  console.log('Cleaned existing data');
 
-  // Create users
   const alice = await prisma.user.create({
     data: {
       email: 'alice@example.com',
@@ -50,9 +48,8 @@ async function main() {
     },
   });
 
-  console.log('✓ Created users: Alice, Bob, Charlie');
+  console.log('Created users: Alice, Bob, Charlie');
 
-  // Create a group (Alice is admin/creator)
   const group = await prisma.group.create({
     data: {
       name: 'Weekend Trip',
@@ -67,10 +64,8 @@ async function main() {
     },
   });
 
-  console.log('✓ Created group with members');
+  console.log('Created group with members');
 
-  // Create an expense: Alice paid 3000 cents ($30.00) for dinner
-  // Split equally among all 3: each owes 1000 cents ($10.00)
   const expense1 = await prisma.expense.create({
     data: {
       groupId: group.id,
@@ -81,7 +76,7 @@ async function main() {
       splitType: 'EQUAL',
       shares: {
         create: [
-          { userId: alice.id, amountOwed: 1000 }, // Alice paid it, so no debt for herself
+          { userId: alice.id, amountOwed: 1000 },
           { userId: bob.id, amountOwed: 1000 },
           { userId: charlie.id, amountOwed: 1000 },
         ],
@@ -89,9 +84,6 @@ async function main() {
     },
   });
 
-  // Create ledger entry for expense1
-  // Bob owes Alice 1000 cents
-  // Charlie owes Alice 1000 cents
   await prisma.ledgerEntry.create({
     data: {
       groupId: group.id,
@@ -116,10 +108,8 @@ async function main() {
     },
   });
 
-  console.log('✓ Created expense: Dinner (equal split)');
+  console.log('Created expense: Dinner (equal split)');
 
-  // Create another expense: Bob paid 2400 cents ($24.00) for hotel
-  // Split equally among all 3: each owes 800 cents ($8.00)
   const expense2 = await prisma.expense.create({
     data: {
       groupId: group.id,
@@ -138,7 +128,6 @@ async function main() {
     },
   });
 
-  // Create ledger entries for expense2
   await prisma.ledgerEntry.create({
     data: {
       groupId: group.id,
@@ -163,12 +152,8 @@ async function main() {
     },
   });
 
-  console.log('✓ Created expense: Hotel (equal split)');
+  console.log('Created expense: Hotel (equal split)');
 
-  // Create pair balances (netting logic)
-  // Bob -> Alice: owes 1000 - 800 = 200 cents
-  // Charlie -> Alice: owes 1000 cents
-  // Charlie -> Bob: owes 800 cents
   await prisma.pairBalance.create({
     data: {
       groupId: group.id,
@@ -196,9 +181,8 @@ async function main() {
     },
   });
 
-  console.log('✓ Created pair balances (netting applied)');
+  console.log('Created pair balances');
 
-  // Record a settlement: Bob pays Alice 200 cents
   const settlement = await prisma.settlement.create({
     data: {
       groupId: group.id,
@@ -208,7 +192,6 @@ async function main() {
     },
   });
 
-  // Update pair balance after settlement
   await prisma.pairBalance.update({
     where: {
       groupId_debtorUserId_creditorUserId: {
@@ -218,11 +201,10 @@ async function main() {
       },
     },
     data: {
-      netAmount: 0, // Settled completely
+      netAmount: 0,
     },
   });
 
-  // Create ledger entry for settlement
   await prisma.ledgerEntry.create({
     data: {
       groupId: group.id,
@@ -235,10 +217,10 @@ async function main() {
     },
   });
 
-  console.log('✓ Created settlement: Bob paid Alice 200 cents');
+  console.log('Created settlement: Bob paid Alice 200 cents');
 
-  console.log('\n✅ Seed completed successfully!\n');
-  console.log('Test data overview:');
+  console.log('\nSeed completed successfully.\n');
+  console.log('Data overview:');
   console.log('  - Users: Alice, Bob, Charlie');
   console.log('  - Group: "Weekend Trip"');
   console.log('  - Expenses: Dinner (3000¢), Hotel (2400¢)');
@@ -251,7 +233,7 @@ main()
     await prisma.$disconnect();
   })
   .catch(async (error) => {
-    console.error('❌ Seed failed:', error);
+    console.error('Seed failed:', error);
     await prisma.$disconnect();
     process.exit(1);
   });

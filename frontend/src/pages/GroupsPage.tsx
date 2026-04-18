@@ -311,7 +311,7 @@ export default function GroupsPage() {
                     <span className="stat-value">{new Date(selectedGroup.group.createdAt).toLocaleDateString()}</span>
                   </div>
                   {isGroupAdmin && (
-                    <div className="group-badge">👑 Admin</div>
+                    <div className="group-badge">Admin</div>
                   )}
                 </div>
               </section>

@@ -1,13 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { AppError } from './errorHandler.js';
 import { verifyAuthToken } from '../lib/security.js';
-
-/**
- * Mock authentication middleware for MVP.
- * In production, replace with JWT or OAuth validation.
- * Expects header: X-User-ID (user CUID)
- * Optional header: X-User-Role (ADMIN | MEMBER, defaults to MEMBER)
- */
 export interface AuthUser {
   id: string;
   email: string;
@@ -15,11 +8,9 @@ export interface AuthUser {
   role: 'ADMIN' | 'MEMBER';
 }
 
-declare global {
-  namespace Express {
-    interface Request {
-      user?: AuthUser;
-    }
+declare module 'express-serve-static-core' {
+  interface Request {
+    user?: AuthUser;
   }
 }
 

@@ -13,13 +13,13 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { label: 'Dashboard', path: '/dashboard', icon: '📊' },
-  { label: 'Groups', path: '/groups', icon: '👥' },
-  { label: 'Expenses', path: '/expenses', icon: '💰' },
-  { label: 'Balances', path: '/balances', icon: '⚖️' },
-  { label: 'Settlements', path: '/settlements', icon: '✅' },
-  { label: 'Users', path: '/users', icon: '👤' },
-  { label: 'Settings', path: '/settings', icon: '⚙️' },
+  { label: 'Dashboard', path: '/dashboard', icon: '⮞' },
+  { label: 'Groups', path: '/groups', icon: '⮞' },
+  { label: 'Expenses', path: '/expenses', icon: '⮞' },
+  { label: 'Balances', path: '/balances', icon: '⮞' },
+  { label: 'Settlements', path: '/settlements', icon: '⮞' },
+  { label: 'Users', path: '/users', icon: '⮞' },
+  { label: 'Settings', path: '/settings', icon: '⮞' },
 ];
 
 export function AppLayout({ children }: LayoutProps) {
@@ -37,7 +37,6 @@ export function AppLayout({ children }: LayoutProps) {
 
   return (
     <div className="app-layout">
-      {/* Sidebar */}
       <aside className={`sidebar ${isSidebarOpen ? 'open' : 'closed'}`}>
         <div className="sidebar-header">
           <h2>Expenses</h2>
@@ -65,9 +64,7 @@ export function AppLayout({ children }: LayoutProps) {
         </nav>
       </aside>
 
-      {/* Main Content */}
       <div className="layout-main">
-        {/* Header */}
         <header className="app-header">
           <div className="header-title">
             <h1>
@@ -86,7 +83,6 @@ export function AppLayout({ children }: LayoutProps) {
           </div>
         </header>
 
-        {/* Content Area */}
         <main className="content-area">{children}</main>
       </div>
     </div>

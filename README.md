@@ -1,6 +1,6 @@
 # Splitwise-Like Expense Sharing App
 
-Phase 1 scaffold using:
+Scaffold using:
 - Backend: Node.js + Express + TypeScript
 - Frontend: React + TypeScript (Vite)
 - Database: PostgreSQL + Prisma

@@ -2,9 +2,9 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 async function main() {
     await prisma.seedRun.upsert({
-        where: { key: 'phase1-baseline' },
+        where: { key: 'baseline' },
         update: {},
-        create: { key: 'phase1-baseline' },
+        create: { key: 'baseline' },
     });
 }
 main()

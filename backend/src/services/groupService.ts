@@ -70,8 +70,7 @@ export class GroupService {
     input: AddGroupMemberInput,
     requestingUserId: string,
   ) {
-    // Verify group exists
-    const group = await this.getGroupById(groupId);
+    await this.getGroupById(groupId);
 
     // Check requesting user is admin
     const requesterMember = await groupRepository.findMember(groupId, requestingUserId);

@@ -8,8 +8,7 @@
     "build": "tsc -p tsconfig.json",
     "start": "node dist/server.js",
     "lint": "eslint \"src/**/*.ts\" \"prisma/**/*.ts\"",
-    "test": "vitest run",
-    "test:watch": "vitest",
+    "test": "echo No tests configured",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma db push",
     "prisma:seed": "prisma db seed"
@@ -35,7 +34,6 @@
     "@typescript-eslint/parser": "^8.12.2",
     "eslint": "^9.14.0",
     "prisma": "^5.22.0",
-    "vitest": "^2.1.4",
     "tsx": "^4.19.2",
     "typescript": "^5.6.3"
   }

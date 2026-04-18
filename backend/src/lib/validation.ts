@@ -1,6 +1,5 @@
 import { z } from 'zod';
 
-// User schemas
 export const createUserSchema = z.object({
   email: z.string().email('Invalid email format'),
   name: z.string().min(1, 'Name is required').max(255),
@@ -25,7 +24,6 @@ export const userPhoneSchema = z.object({
   verified: z.boolean().optional(),
 });
 
-// Group schemas
 export const createGroupSchema = z.object({
   name: z.string().min(1, 'Group name is required').max(255),
 });
@@ -34,7 +32,6 @@ export const updateGroupSchema = z.object({
   name: z.string().min(1, 'Group name is required').max(255).optional(),
 });
 
-// Group member schemas
 export const addGroupMemberSchema = z.object({
   userId: z.string().cuid('Invalid user ID'),
   phoneId: z.string().cuid('Invalid phone ID'),
@@ -45,7 +42,6 @@ export const updateGroupMemberRoleSchema = z.object({
   role: z.enum(['ADMIN', 'MEMBER']),
 });
 
-// Expense schemas
 export const splitTypeSchema = z.enum(['EQUAL', 'EXACT', 'PERCENTAGE']);
 
 export const expenseParticipantSchema = z.object({
@@ -89,7 +85,6 @@ export const createExpenseSchema = z
     }
   });
 
-// Settlement schemas (Phase 5)
 export const createSettlementSchema = z.object({
   fromUserId: z.string().cuid('Invalid debtor user ID'),
   toUserId: z.string().cuid('Invalid creditor user ID'),
@@ -101,7 +96,6 @@ export const createSettlementSchema = z.object({
     .optional(),
 });
 
-// Type exports for convenience
 export type CreateUserInput = z.infer<typeof createUserSchema>;
 export type UpdateUserInput = z.infer<typeof updateUserSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
