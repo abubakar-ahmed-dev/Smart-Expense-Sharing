@@ -1,6 +1,7 @@
 import { AppError } from '../middleware/errorHandler.js';
 import { userRepository } from '../repositories/userRepository.js';
 import { CreateUserInput, UpdateUserInput } from '../lib/validation.js';
+import { hashPassword } from '../lib/security.js';
 
 export class UserService {
   async getUserById(id: string) {
@@ -34,7 +35,12 @@ export class UserService {
       );
     }
 
-    return userRepository.create(input);
+    return userRepository.create({
+      email: input.email,
+      name: input.name,
+      passwordHash: hashPassword(input.password),
+      isVerified: input.isVerified ?? false,
+    });
   }
 
   async updateUser(id: string, input: UpdateUserInput) {
@@ -52,7 +58,12 @@ export class UserService {
       }
     }
 
-    return userRepository.update(id, input);
+    return userRepository.update(id, {
+      ...(input.email ? { email: input.email } : {}),
+      ...(input.name ? { name: input.name } : {}),
+      ...(typeof input.isVerified === 'boolean' ? { isVerified: input.isVerified } : {}),
+      ...(input.password ? { passwordHash: hashPassword(input.password) } : {}),
+    });
   }
 
   async deleteUser(id: string) {

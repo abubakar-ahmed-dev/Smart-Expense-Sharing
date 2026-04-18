@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { z } from 'zod';
+import * as authController from '../controllers/authController.js';
 import * as balanceController from '../controllers/balanceController.js';
 import * as expenseController from '../controllers/expenseController.js';
 import * as groupController from '../controllers/groupController.js';
@@ -13,6 +14,7 @@ import {
   createGroupSchema,
   createSettlementSchema,
   createUserSchema,
+  loginSchema,
   updateGroupMemberRoleSchema,
   updateGroupSchema,
   updateUserSchema,
@@ -25,28 +27,41 @@ export const v1Router = Router();
 v1Router.get('/health', healthController);
 
 // ============================================
+// AUTH ROUTES
+// ============================================
+
+v1Router.post('/auth/login', validateRequest(loginSchema), authController.login);
+v1Router.post('/auth/signup', validateRequest(createUserSchema), authController.signup);
+
+// ============================================
 // USER ROUTES
 // ============================================
 
 // Public user endpoints
-v1Router.get('/users', userController.listUsers);
-v1Router.post('/users', validateRequest(createUserSchema), userController.createUser);
+v1Router.get('/users', mockAuth, requireAuth, userController.listUsers);
+v1Router.post('/users', mockAuth, requireAuth, validateRequest(createUserSchema), userController.createUser);
 
 // Parameterized user endpoints
 const userIdSchema = z.object({ userId: z.string().cuid() });
 v1Router.get(
   '/users/:userId',
+  mockAuth,
+  requireAuth,
   validatePathParams(userIdSchema),
   userController.getUserById,
 );
 v1Router.put(
   '/users/:userId',
+  mockAuth,
+  requireAuth,
   validatePathParams(userIdSchema),
   validateRequest(updateUserSchema),
   userController.updateUser,
 );
 v1Router.delete(
   '/users/:userId',
+  mockAuth,
+  requireAuth,
   validatePathParams(userIdSchema),
   userController.deleteUser,
 );
@@ -56,11 +71,13 @@ v1Router.delete(
 // ============================================
 
 // Group listing (public)
-v1Router.get('/groups', groupController.listGroups);
+v1Router.get('/groups', mockAuth, requireAuth, groupController.listGroups);
 
 // User's groups (requires auth)
 v1Router.get(
   '/users/:userId/groups',
+  mockAuth,
+  requireAuth,
   validatePathParams(userIdSchema),
   groupController.getUserGroups,
 );
@@ -78,6 +95,8 @@ v1Router.post(
 const groupIdSchema = z.object({ groupId: z.string().cuid() });
 v1Router.get(
   '/groups/:groupId',
+  mockAuth,
+  requireAuth,
   validatePathParams(groupIdSchema),
   groupController.getGroupById,
 );
@@ -85,6 +104,8 @@ v1Router.get(
 // Update group
 v1Router.put(
   '/groups/:groupId',
+  mockAuth,
+  requireAuth,
   validatePathParams(groupIdSchema),
   validateRequest(updateGroupSchema),
   groupController.updateGroup,
@@ -93,6 +114,8 @@ v1Router.put(
 // Delete group
 v1Router.delete(
   '/groups/:groupId',
+  mockAuth,
+  requireAuth,
   validatePathParams(groupIdSchema),
   groupController.deleteGroup,
 );
@@ -104,6 +127,8 @@ v1Router.delete(
 // Get group members
 v1Router.get(
   '/groups/:groupId/members',
+  mockAuth,
+  requireAuth,
   validatePathParams(groupIdSchema),
   groupController.getGroupMembers,
 );
@@ -152,6 +177,8 @@ const expenseIdSchema = z.object({
 
 v1Router.get(
   '/groups/:groupId/expenses',
+  mockAuth,
+  requireAuth,
   validatePathParams(groupIdSchema),
   expenseController.listGroupExpenses,
 );
@@ -167,6 +194,8 @@ v1Router.post(
 
 v1Router.get(
   '/groups/:groupId/expenses/:expenseId',
+  mockAuth,
+  requireAuth,
   validatePathParams(expenseIdSchema),
   expenseController.getGroupExpenseById,
 );
@@ -182,12 +211,16 @@ const groupUserIdSchema = z.object({
 
 v1Router.get(
   '/groups/:groupId/balances',
+  mockAuth,
+  requireAuth,
   validatePathParams(groupIdSchema),
   balanceController.getGroupBalances,
 );
 
 v1Router.get(
   '/groups/:groupId/balances/users/:userId',
+  mockAuth,
+  requireAuth,
   validatePathParams(groupUserIdSchema),
   balanceController.getUserBalanceSummary,
 );
@@ -203,6 +236,8 @@ const settlementIdSchema = z.object({
 
 v1Router.get(
   '/groups/:groupId/settlements',
+  mockAuth,
+  requireAuth,
   validatePathParams(groupIdSchema),
   settlementController.listGroupSettlements,
 );
@@ -218,6 +253,8 @@ v1Router.post(
 
 v1Router.get(
   '/groups/:groupId/settlements/:settlementId',
+  mockAuth,
+  requireAuth,
   validatePathParams(settlementIdSchema),
   settlementController.getGroupSettlementById,
 );

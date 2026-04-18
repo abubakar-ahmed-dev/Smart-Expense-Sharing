@@ -12,15 +12,34 @@ datasource db {
 // Money is stored in minor units (cents) as Int
 // ============================================
 
+enum GroupMemberRole {
+  ADMIN
+  MEMBER
+}
+
+enum SplitType {
+  EQUAL
+  EXACT
+  PERCENTAGE
+}
+
+enum LedgerEventType {
+  EXPENSE
+  SETTLEMENT
+}
+
 model User {
   id                String          @id @default(cuid())
   email             String          @unique
   name              String
+  passwordHash      String
+  isVerified        Boolean         @default(false)
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
 
   // Relations
   phones            UserPhone[]
+  createdGroups      Group[]         @relation("GroupCreatedBy")
   groupMemberships  GroupMember[]
   expensesPaidBy    Expense[]       @relation("PaidBy")
   expenseShares     ExpenseShare[]
@@ -45,11 +64,12 @@ model UserPhone {
 }
 
 model Group {
-  id        String          @id @default(cuid())
-  name      String
-  createdBy String          // userId
-  createdAt DateTime        @default(now())
-  updatedAt DateTime        @updatedAt
+  id                String          @id @default(cuid())
+  name              String
+  createdByUserId   String
+  createdBy         User            @relation("GroupCreatedBy", fields: [createdByUserId], references: [id], onDelete: Restrict)
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
 
   // Relations
   members           GroupMember[]
@@ -60,12 +80,12 @@ model Group {
 }
 
 model GroupMember {
-  id        String   @id @default(cuid())
+  id        String          @id @default(cuid())
   groupId   String
   userId    String
-  role      String   @default("MEMBER") // ADMIN | MEMBER
-  joinedAt  DateTime @default(now())
-  isActive  Boolean  @default(true)
+  role      GroupMemberRole @default(MEMBER)
+  joinedAt  DateTime        @default(now())
+  isActive  Boolean         @default(true)
 
   group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
   user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -82,7 +102,7 @@ model Expense {
   totalAmount  Int             // in minor units (cents)
   currency     String          @default("USD")
   description  String
-  splitType    String          @default("EQUAL") // EQUAL | EXACT | PERCENTAGE
+  splitType    SplitType       @default(EQUAL)
   createdAt    DateTime        @default(now())
   updatedAt    DateTime        @updatedAt
 
@@ -134,7 +154,7 @@ model Settlement {
 model LedgerEntry {
   id           String   @id @default(cuid())
   groupId      String
-  eventType    String   // EXPENSE | SETTLEMENT
+  eventType    LedgerEventType
   fromUserId   String
   toUserId     String
   amount       Int      // in minor units (cents)

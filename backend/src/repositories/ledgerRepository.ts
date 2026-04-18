@@ -1,11 +1,11 @@
-import { Prisma } from '@prisma/client';
+import { LedgerEventType, Prisma } from '@prisma/client';
 import { prisma } from '../lib/db.js';
 
 type DbClient = Prisma.TransactionClient | typeof prisma;
 
 export interface LedgerEntryCreateData {
   groupId: string;
-  eventType: 'EXPENSE' | 'SETTLEMENT';
+  eventType: LedgerEventType;
   fromUserId: string;
   toUserId: string;
   amount: number;

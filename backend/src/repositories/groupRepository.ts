@@ -1,4 +1,4 @@
-import { Group, GroupMember } from '@prisma/client';
+import { Group, GroupMember, GroupMemberRole } from '@prisma/client';
 import { prisma } from '../lib/db.js';
 import { AddGroupMemberInput, CreateGroupInput, UpdateGroupInput, UpdateGroupMemberRoleInput } from '../lib/validation.js';
 
@@ -52,11 +52,11 @@ export class GroupRepository {
     return prisma.group.create({
       data: {
         name: data.name,
-        createdBy: createdByUserId,
+        createdByUserId,
         members: {
           create: {
             userId: createdByUserId,
-            role: 'ADMIN',
+            role: GroupMemberRole.ADMIN,
           },
         },
       },

@@ -4,11 +4,20 @@ import { z } from 'zod';
 export const createUserSchema = z.object({
   email: z.string().email('Invalid email format'),
   name: z.string().min(1, 'Name is required').max(255),
+  password: z.string().min(6, 'Password must be at least 6 characters long'),
+  isVerified: z.boolean().optional(),
 });
 
 export const updateUserSchema = z.object({
   email: z.string().email('Invalid email format').optional(),
   name: z.string().min(1, 'Name is required').max(255).optional(),
+  password: z.string().min(6, 'Password must be at least 6 characters long').optional(),
+  isVerified: z.boolean().optional(),
+});
+
+export const loginSchema = z.object({
+  email: z.string().email('Invalid email format'),
+  password: z.string().min(1, 'Password is required'),
 });
 
 export const userPhoneSchema = z.object({
@@ -95,6 +104,7 @@ export const createSettlementSchema = z.object({
 // Type exports for convenience
 export type CreateUserInput = z.infer<typeof createUserSchema>;
 export type UpdateUserInput = z.infer<typeof updateUserSchema>;
+export type LoginInput = z.infer<typeof loginSchema>;
 export type UserPhoneInput = z.infer<typeof userPhoneSchema>;
 export type CreateGroupInput = z.infer<typeof createGroupSchema>;
 export type UpdateGroupInput = z.infer<typeof updateGroupSchema>;

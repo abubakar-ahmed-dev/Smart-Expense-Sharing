@@ -1,12 +1,16 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
+import { MemoryRouter } from 'react-router-dom';
 import App from './App';
+import { AuthProvider } from './auth/AuthContext';
+import { clearSession, writeSession } from './auth/session';
 
 const mockUsers = [
   {
     id: 'user-1',
     email: 'alice@example.com',
     name: 'Alice',
+    isVerified: true,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
@@ -14,6 +18,7 @@ const mockUsers = [
     id: 'user-2',
     email: 'bob@example.com',
     name: 'Bob',
+    isVerified: false,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
@@ -23,7 +28,7 @@ const mockGroups = [
   {
     id: 'group-1',
     name: 'Trip',
-    createdBy: 'user-1',
+    createdByUserId: 'user-1',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
@@ -51,7 +56,29 @@ const mockMembers = [
 ];
 
 describe('App', () => {
+  it('redirects unauthenticated users to login page', async () => {
+    clearSession();
+
+    render(
+      <MemoryRouter initialEntries={['/dashboard']}>
+        <AuthProvider>
+          <App />
+        </AuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByRole('heading', { name: /Welcome back/i })).toBeInTheDocument();
+  });
+
   it('renders dashboard with fetched data', async () => {
+    writeSession({
+      token: 'token-1',
+      userId: 'user-1',
+      email: 'alice@example.com',
+      name: 'Alice',
+      isVerified: true,
+    });
+
     const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {
       const url = String(input);
 
@@ -150,7 +177,13 @@ describe('App', () => {
       });
     });
 
-    render(<App />);
+    render(
+      <MemoryRouter initialEntries={['/dashboard']}>
+        <AuthProvider>
+          <App />
+        </AuthProvider>
+      </MemoryRouter>,
+    );
 
     await waitFor(() => {
       expect(screen.getByText(/Smart Expense Sharing/i)).toBeInTheDocument();
@@ -162,5 +195,6 @@ describe('App', () => {
 
     expect(fetchMock).toHaveBeenCalled();
     fetchMock.mockRestore();
+    clearSession();
   });
 });

@@ -41,14 +41,38 @@ export interface User {
   id: string;
   email: string;
   name: string;
+  isVerified: boolean;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface CreateUserPayload {
+  email: string;
+  name: string;
+  password: string;
+}
+
+export interface LoginPayload {
+  email: string;
+  password: string;
+}
+
+export interface AuthSessionUser {
+  id: string;
+  email: string;
+  name: string;
+  isVerified: boolean;
+}
+
+export interface AuthSessionResponse {
+  token: string;
+  user: AuthSessionUser;
 }
 
 export interface Group {
   id: string;
   name: string;
-  createdBy: string;
+  createdByUserId: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -135,6 +159,7 @@ export interface CreateSettlementPayload {
 }
 
 export interface AuthContext {
+  token?: string;
   userId?: string;
   role?: 'ADMIN' | 'MEMBER';
 }
@@ -151,7 +176,9 @@ async function request<T>(
     headers.set('Content-Type', 'application/json');
   }
 
-  if (auth?.userId) {
+  if (auth?.token) {
+    headers.set('Authorization', `Bearer ${auth.token}`);
+  } else if (auth?.userId) {
     headers.set('X-User-ID', auth.userId);
   }
 
@@ -186,8 +213,18 @@ async function request<T>(
 
 export const apiClient = {
   fetchHealth: () => request<HealthData>('/health'),
-  fetchUsers: () => request<User[]>('/users'),
-  fetchGroups: () => request<Group[]>('/groups'),
+  fetchUsers: (auth?: AuthContext) => request<User[]>('/users', {}, auth),
+  signup: (payload: CreateUserPayload) =>
+    request<AuthSessionResponse>('/auth/signup', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+  login: (payload: LoginPayload) =>
+    request<AuthSessionResponse>('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+  fetchGroups: (auth?: AuthContext) => request<Group[]>('/groups', {}, auth),
   createGroup: (name: string, auth: AuthContext) =>
     request<Group>(
       '/groups',
@@ -197,7 +234,7 @@ export const apiClient = {
       },
       auth,
     ),
-  fetchGroupMembers: (groupId: string) => request<GroupMember[]>(`/groups/${groupId}/members`),
+  fetchGroupMembers: (groupId: string, auth?: AuthContext) => request<GroupMember[]>(`/groups/${groupId}/members`, {}, auth),
   addGroupMember: (groupId: string, userId: string, role: 'ADMIN' | 'MEMBER', auth: AuthContext) =>
     request<GroupMember>(
       `/groups/${groupId}/members`,
@@ -207,7 +244,7 @@ export const apiClient = {
       },
       auth,
     ),
-  fetchGroupExpenses: (groupId: string) => request<Expense[]>(`/groups/${groupId}/expenses`),
+  fetchGroupExpenses: (groupId: string, auth?: AuthContext) => request<Expense[]>(`/groups/${groupId}/expenses`, {}, auth),
   createExpense: (groupId: string, payload: CreateExpensePayload, auth: AuthContext) =>
     request<Expense>(
       `/groups/${groupId}/expenses`,
@@ -217,10 +254,10 @@ export const apiClient = {
       },
       auth,
     ),
-  fetchGroupBalances: (groupId: string) => request<PairBalance[]>(`/groups/${groupId}/balances`),
-  fetchUserBalanceSummary: (groupId: string, userId: string) =>
-    request<UserBalanceSummary>(`/groups/${groupId}/balances/users/${userId}`),
-  fetchGroupSettlements: (groupId: string) => request<Settlement[]>(`/groups/${groupId}/settlements`),
+  fetchGroupBalances: (groupId: string, auth?: AuthContext) => request<PairBalance[]>(`/groups/${groupId}/balances`, {}, auth),
+  fetchUserBalanceSummary: (groupId: string, userId: string, auth?: AuthContext) =>
+    request<UserBalanceSummary>(`/groups/${groupId}/balances/users/${userId}`, {}, auth),
+  fetchGroupSettlements: (groupId: string, auth?: AuthContext) => request<Settlement[]>(`/groups/${groupId}/settlements`, {}, auth),
   createSettlement: (groupId: string, payload: CreateSettlementPayload, auth: AuthContext) =>
     request<Settlement>(
       `/groups/${groupId}/settlements`,

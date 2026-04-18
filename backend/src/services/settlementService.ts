@@ -1,4 +1,5 @@
 import { prisma } from '../lib/db.js';
+import { LedgerEventType } from '@prisma/client';
 import { CreateSettlementInput } from '../lib/validation.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { ledgerRepository } from '../repositories/ledgerRepository.js';
@@ -81,7 +82,7 @@ export class SettlementService {
         await ledgerRepository.createMany(tx, [
           {
             groupId,
-            eventType: 'SETTLEMENT',
+            eventType: LedgerEventType.SETTLEMENT,
             fromUserId: input.toUserId,
             toUserId: input.fromUserId,
             amount: input.amount,

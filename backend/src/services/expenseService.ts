@@ -1,4 +1,5 @@
 import { prisma } from '../lib/db.js';
+import { LedgerEventType } from '@prisma/client';
 import { CreateExpenseInput } from '../lib/validation.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { expenseRepository } from '../repositories/expenseRepository.js';
@@ -65,7 +66,7 @@ export class ExpenseService {
         .filter((share) => share.userId !== input.paidByUserId && share.amountOwed > 0)
         .map((share) => ({
           groupId,
-          eventType: 'EXPENSE' as const,
+          eventType: LedgerEventType.EXPENSE,
           fromUserId: share.userId,
           toUserId: input.paidByUserId,
           amount: share.amountOwed,

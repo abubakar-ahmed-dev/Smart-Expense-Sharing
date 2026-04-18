@@ -14,6 +14,7 @@ dotenv.config({ path: path.join(backendRoot, '.env') });
 const envSchema = z.object({
   BACKEND_PORT: z.coerce.number().int().positive().default(4500),
   DATABASE_URL: z.string().url(),
+  AUTH_TOKEN_SECRET: z.string().min(32).default('dev-auth-token-secret-change-me-please-32+'),
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
 });
 

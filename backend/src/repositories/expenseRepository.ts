@@ -1,5 +1,6 @@
 import { Prisma } from '@prisma/client';
 import { prisma } from '../lib/db.js';
+import { SplitType } from '@prisma/client';
 
 type DbClient = Prisma.TransactionClient | typeof prisma;
 
@@ -9,7 +10,7 @@ export interface CreateExpenseData {
   totalAmount: number;
   currency: string;
   description: string;
-  splitType: 'EQUAL' | 'EXACT' | 'PERCENTAGE';
+  splitType: SplitType;
 }
 
 export interface CreateExpenseShareData {
