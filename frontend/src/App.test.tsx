@@ -169,7 +169,27 @@ describe('App', () => {
             { status: 201 },
           );
         }
-        return new Response(JSON.stringify({ success: true, data: [] }), { status: 200 });
+        return new Response(
+          JSON.stringify({
+            success: true,
+            data: [
+              {
+                id: 'expense-1',
+                groupId: 'group-1',
+                paidByUserId: 'user-1',
+                totalAmount: 1000,
+                currency: 'USD',
+                description: 'Dinner',
+                splitType: 'EQUAL',
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                paidBy: mockUsers[0],
+                shares: [],
+              },
+            ],
+          }),
+          { status: 200 },
+        );
       }
 
       return new Response(JSON.stringify({ success: false, error: { code: 'NOT_FOUND', message: 'not found' } }), {
@@ -186,11 +206,10 @@ describe('App', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText(/Smart Expense Sharing/i)).toBeInTheDocument();
-      expect(screen.getByText(/Connected to backend/i)).toBeInTheDocument();
-      expect(screen.getByText(/Group Management/i)).toBeInTheDocument();
-      expect(screen.getByText(/Expense Creation/i)).toBeInTheDocument();
-      expect(screen.getByText(/Settlement Recording/i)).toBeInTheDocument();
+      expect(screen.getByText(/Financial Overview/i)).toBeInTheDocument();
+      expect(screen.getByText(/Your Groups/i)).toBeInTheDocument();
+      expect(screen.getByText(/Recent Expenses/i)).toBeInTheDocument();
+      expect(screen.getByText(/Total You Owe/i)).toBeInTheDocument();
     });
 
     expect(fetchMock).toHaveBeenCalled();
