@@ -1,7 +1,9 @@
 import { Router } from 'express';
 import { z } from 'zod';
+import * as balanceController from '../controllers/balanceController.js';
 import * as expenseController from '../controllers/expenseController.js';
 import * as groupController from '../controllers/groupController.js';
+import * as settlementController from '../controllers/settlementController.js';
 import * as userController from '../controllers/userController.js';
 import { mockAuth, requireAuth } from '../middleware/auth.js';
 import { validatePathParams, validateRequest } from '../middleware/validation.js';
@@ -9,6 +11,7 @@ import {
   addGroupMemberSchema,
   createExpenseSchema,
   createGroupSchema,
+  createSettlementSchema,
   createUserSchema,
   updateGroupMemberRoleSchema,
   updateGroupSchema,
@@ -166,4 +169,55 @@ v1Router.get(
   '/groups/:groupId/expenses/:expenseId',
   validatePathParams(expenseIdSchema),
   expenseController.getGroupExpenseById,
+);
+
+// ============================================
+// BALANCE ROUTES (PHASE 5)
+// ============================================
+
+const groupUserIdSchema = z.object({
+  groupId: z.string().cuid(),
+  userId: z.string().cuid(),
+});
+
+v1Router.get(
+  '/groups/:groupId/balances',
+  validatePathParams(groupIdSchema),
+  balanceController.getGroupBalances,
+);
+
+v1Router.get(
+  '/groups/:groupId/balances/users/:userId',
+  validatePathParams(groupUserIdSchema),
+  balanceController.getUserBalanceSummary,
+);
+
+// ============================================
+// SETTLEMENT ROUTES (PHASE 5)
+// ============================================
+
+const settlementIdSchema = z.object({
+  groupId: z.string().cuid(),
+  settlementId: z.string().min(1),
+});
+
+v1Router.get(
+  '/groups/:groupId/settlements',
+  validatePathParams(groupIdSchema),
+  settlementController.listGroupSettlements,
+);
+
+v1Router.post(
+  '/groups/:groupId/settlements',
+  mockAuth,
+  requireAuth,
+  validatePathParams(groupIdSchema),
+  validateRequest(createSettlementSchema),
+  settlementController.createGroupSettlement,
+);
+
+v1Router.get(
+  '/groups/:groupId/settlements/:settlementId',
+  validatePathParams(settlementIdSchema),
+  settlementController.getGroupSettlementById,
 );

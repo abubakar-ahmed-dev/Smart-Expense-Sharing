@@ -2,6 +2,7 @@ import { prisma } from '../lib/db.js';
 import { CreateExpenseInput } from '../lib/validation.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { expenseRepository } from '../repositories/expenseRepository.js';
+import { ledgerRepository } from '../repositories/ledgerRepository.js';
 import { getSplitStrategy } from './splitStrategies.js';
 
 export class ExpenseService {
@@ -46,8 +47,8 @@ export class ExpenseService {
       );
     }
 
-    return prisma.$transaction((tx) =>
-      expenseRepository.createExpenseWithShares(
+    return prisma.$transaction(async (tx) => {
+      const expense = await expenseRepository.createExpenseWithShares(
         tx,
         {
           groupId,
@@ -58,8 +59,24 @@ export class ExpenseService {
           splitType: input.splitType,
         },
         shares,
-      ),
-    );
+      );
+
+      const ledgerEntries = shares
+        .filter((share) => share.userId !== input.paidByUserId && share.amountOwed > 0)
+        .map((share) => ({
+          groupId,
+          eventType: 'EXPENSE' as const,
+          fromUserId: share.userId,
+          toUserId: input.paidByUserId,
+          amount: share.amountOwed,
+          referenceId: expense.id,
+          expenseId: expense.id,
+        }));
+
+      await ledgerRepository.createMany(tx, ledgerEntries);
+
+      return expense;
+    });
   }
 
   private ensureUniqueParticipants(participants: CreateExpenseInput['participants']) {

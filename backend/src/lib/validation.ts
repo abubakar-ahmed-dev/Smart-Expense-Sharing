@@ -80,6 +80,18 @@ export const createExpenseSchema = z
     }
   });
 
+// Settlement schemas (Phase 5)
+export const createSettlementSchema = z.object({
+  fromUserId: z.string().cuid('Invalid debtor user ID'),
+  toUserId: z.string().cuid('Invalid creditor user ID'),
+  amount: z.number().int().positive('Settlement amount must be a positive integer'),
+  idempotencyKey: z
+    .string()
+    .min(1, 'Idempotency key cannot be empty')
+    .max(128, 'Idempotency key is too long')
+    .optional(),
+});
+
 // Type exports for convenience
 export type CreateUserInput = z.infer<typeof createUserSchema>;
 export type UpdateUserInput = z.infer<typeof updateUserSchema>;
@@ -91,3 +103,4 @@ export type UpdateGroupMemberRoleInput = z.infer<typeof updateGroupMemberRoleSch
 export type SplitTypeInput = z.infer<typeof splitTypeSchema>;
 export type ExpenseParticipantInput = z.infer<typeof expenseParticipantSchema>;
 export type CreateExpenseInput = z.infer<typeof createExpenseSchema>;
+export type CreateSettlementInput = z.infer<typeof createSettlementSchema>;
