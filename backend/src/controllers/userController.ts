@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import { AppError } from '../middleware/errorHandler.js';
 import { userService } from '../services/userService.js';
 
 export async function listUsers(req: Request, res: Response, next: NextFunction) {
@@ -51,9 +52,29 @@ export async function updateUser(req: Request, res: Response, next: NextFunction
   }
 }
 
+export async function getAccountDeletionStatus(req: Request, res: Response, next: NextFunction) {
+  try {
+    const userId = typeof req.params.userId === 'string' ? req.params.userId : req.params.userId[0];
+    if (!req.user || req.user.id !== userId) {
+      throw new AppError('FORBIDDEN', 'You can only view your own account status', 403);
+    }
+
+    const status = await userService.getAccountDeletionStatus(userId);
+    res.status(200).json({
+      success: true,
+      data: status,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 export async function deleteUser(req: Request, res: Response, next: NextFunction) {
   try {
     const userId = typeof req.params.userId === 'string' ? req.params.userId : req.params.userId[0];
+    if (!req.user || req.user.id !== userId) {
+      throw new AppError('FORBIDDEN', 'You can only delete your own account', 403);
+    }
     const user = await userService.deleteUser(userId);
     res.status(200).json({
       success: true,

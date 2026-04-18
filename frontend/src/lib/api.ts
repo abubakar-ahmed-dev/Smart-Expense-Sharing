@@ -135,6 +135,11 @@ export interface UserBalanceSummary {
   owedBy: Array<{ userId: string; amount: number }>;
 }
 
+export interface AccountDeletionStatus {
+  outstandingDebt: number;
+  canDelete: boolean;
+}
+
 export interface Settlement {
   id: string;
   groupId: string;
@@ -298,6 +303,16 @@ export const apiClient = {
       {
         method: 'PUT',
         body: JSON.stringify({ role }),
+      },
+      auth,
+    ),
+  fetchAccountDeletionStatus: (userId: string, auth?: AuthContext) =>
+    request<AccountDeletionStatus>(`/users/${userId}/deletion-status`, {}, auth),
+  deleteUser: (userId: string, auth?: AuthContext) =>
+    request<User>(
+      `/users/${userId}`,
+      {
+        method: 'DELETE',
       },
       auth,
     ),

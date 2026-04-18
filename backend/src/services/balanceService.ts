@@ -23,6 +23,12 @@ interface PairAccumulator {
   signedAmount: number;
 }
 
+interface BalanceEntry {
+  fromUserId: string;
+  toUserId: string;
+  amount: number;
+}
+
 export class BalanceService {
   async getGroupPairBalances(groupId: string): Promise<PairwiseBalance[]> {
     await this.assertGroupExists(groupId);
@@ -86,6 +92,23 @@ export class BalanceService {
     };
   }
 
+  async getUserOutstandingDebt(userId: string): Promise<number> {
+    const entries = await ledgerRepository.findByUserId(userId);
+    const pairMap = this.aggregatePairwise(entries);
+
+    let totalOwed = 0;
+    for (const pair of pairMap.values()) {
+      const debtorUserId = pair.signedAmount > 0 ? pair.firstUserId : pair.secondUserId;
+      if (debtorUserId !== userId) {
+        continue;
+      }
+
+      totalOwed += Math.abs(pair.signedAmount);
+    }
+
+    return totalOwed;
+  }
+
   private async assertGroupExists(groupId: string) {
     const group = await settlementRepository.findGroupById(groupId);
     if (!group) {
@@ -93,7 +116,7 @@ export class BalanceService {
     }
   }
 
-  private aggregatePairwise(entries: Awaited<ReturnType<typeof ledgerRepository.findByGroupId>>) {
+  private aggregatePairwise(entries: Array<BalanceEntry>) {
     const map = new Map<string, PairAccumulator>();
 
     for (const entry of entries) {

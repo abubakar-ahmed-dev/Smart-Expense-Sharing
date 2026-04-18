@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
-import { ApiClientError, UserPhone, apiClient } from '../lib/api';
+import { AccountDeletionStatus, ApiClientError, UserPhone, apiClient } from '../lib/api';
 
 export default function SettingsPage() {
   const navigate = useNavigate();
   const { session, logout } = useAuth();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deletingAccount, setDeletingAccount] = useState(false);
   const [phones, setPhones] = useState<UserPhone[]>([]);
   const [loadingPhones, setLoadingPhones] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -15,6 +16,7 @@ export default function SettingsPage() {
   const [newPhoneLabel, setNewPhoneLabel] = useState('');
   const [addingPhone, setAddingPhone] = useState(false);
   const [deletingPhoneId, setDeletingPhoneId] = useState<string | null>(null);
+  const [deletionStatus, setDeletionStatus] = useState<AccountDeletionStatus | null>(null);
 
   const auth = { token: session?.token };
 
@@ -22,8 +24,20 @@ export default function SettingsPage() {
   useEffect(() => {
     if (session?.userId) {
       loadPhones();
+      loadAccountDeletionStatus();
     }
   }, [session?.userId]);
+
+  const loadAccountDeletionStatus = async () => {
+    if (!session?.userId) return;
+
+    try {
+      const status = await apiClient.fetchAccountDeletionStatus(session.userId, auth);
+      setDeletionStatus(status);
+    } catch {
+      setDeletionStatus({ outstandingDebt: 0, canDelete: true });
+    }
+  };
 
   const loadPhones = async () => {
     if (!session?.userId) return;
@@ -85,6 +99,29 @@ export default function SettingsPage() {
   const handleLogout = () => {
     logout();
     navigate('/login', { replace: true });
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!session?.userId) return;
+
+    if (deletionStatus && !deletionStatus.canDelete) {
+      setError('Settle all outstanding balances before deleting your account');
+      return;
+    }
+
+    try {
+      setDeletingAccount(true);
+      setError(null);
+      setSuccessMessage(null);
+      await apiClient.deleteUser(session.userId, auth);
+      logout();
+      navigate('/login', { replace: true });
+    } catch (err) {
+      const message = err instanceof ApiClientError ? err.payload?.message : 'Failed to delete account';
+      setError(message || 'Failed to delete account');
+    } finally {
+      setDeletingAccount(false);
+    }
   };
 
   return (
@@ -172,20 +209,39 @@ export default function SettingsPage() {
           <button className="btn-secondary" onClick={handleLogout}>
             Logout
           </button>
-          <button className="btn-danger" onClick={() => setShowDeleteConfirm(true)}>
+          <button
+            className="btn-danger"
+            onClick={() => setShowDeleteConfirm(true)}
+            disabled={deletionStatus ? !deletionStatus.canDelete : true}
+          >
             Delete Account
           </button>
         </div>
 
+        {deletionStatus && !deletionStatus.canDelete && (
+          <p className="text-muted">
+            You currently owe money and cannot delete your account until your outstanding balance is settled.
+          </p>
+        )}
+
         {showDeleteConfirm && (
           <div className="confirm-dialog">
             <p>Are you sure you want to delete your account? This action cannot be undone.</p>
+            {deletionStatus && !deletionStatus.canDelete && (
+              <p className="text-muted">
+                Outstanding balance: {deletionStatus.outstandingDebt}
+              </p>
+            )}
             <div className="dialog-actions">
               <button className="btn-secondary" onClick={() => setShowDeleteConfirm(false)}>
                 Cancel
               </button>
-              <button className="btn-danger" disabled>
-                Delete (Coming Soon)
+              <button
+                className="btn-danger"
+                onClick={handleDeleteAccount}
+                disabled={deletingAccount || (deletionStatus ? !deletionStatus.canDelete : true)}
+              >
+                {deletingAccount ? 'Deleting...' : 'Delete Account'}
               </button>
             </div>
           </div>

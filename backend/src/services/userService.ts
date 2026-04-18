@@ -1,6 +1,8 @@
+import { Prisma } from '@prisma/client';
 import { AppError } from '../middleware/errorHandler.js';
 import { userRepository } from '../repositories/userRepository.js';
 import { CreateUserInput, UpdateUserInput, UserPhoneInput } from '../lib/validation.js';
+import { balanceService } from './balanceService.js';
 import { hashPassword } from '../lib/security.js';
 
 export class UserService {
@@ -64,9 +66,43 @@ export class UserService {
     });
   }
 
+  async getAccountDeletionStatus(id: string) {
+    await this.getUserById(id);
+
+    const outstandingDebt = await balanceService.getUserOutstandingDebt(id);
+
+    return {
+      outstandingDebt,
+      canDelete: outstandingDebt === 0,
+    };
+  }
+
   async deleteUser(id: string) {
     await this.getUserById(id);
-    return userRepository.delete(id);
+
+    const outstandingDebt = await balanceService.getUserOutstandingDebt(id);
+    if (outstandingDebt > 0) {
+      throw new AppError(
+        'ACCOUNT_HAS_PENDING_BALANCE',
+        'Settle all outstanding balances before deleting your account',
+        409,
+        { outstandingDebt },
+      );
+    }
+
+    try {
+      return await userRepository.delete(id);
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2003') {
+        throw new AppError(
+          'ACCOUNT_DELETE_BLOCKED',
+          'Delete or reassign groups, expenses, or settlements that still reference your account',
+          409,
+        );
+      }
+
+      throw error;
+    }
   }
 
   // Phone management

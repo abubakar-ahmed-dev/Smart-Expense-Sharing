@@ -46,6 +46,13 @@ v1Router.put(
   validateRequest(updateUserSchema),
   userController.updateUser,
 );
+v1Router.get(
+  '/users/:userId/deletion-status',
+  mockAuth,
+  requireAuth,
+  validatePathParams(userIdSchema),
+  userController.getAccountDeletionStatus,
+);
 v1Router.delete(
   '/users/:userId',
   mockAuth,

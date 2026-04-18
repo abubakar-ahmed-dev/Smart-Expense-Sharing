@@ -35,6 +35,21 @@ export class LedgerRepository {
       orderBy: { createdAt: 'asc' },
     });
   }
+
+  async findByUserId(userId: string) {
+    return prisma.ledgerEntry.findMany({
+      where: {
+        OR: [{ fromUserId: userId }, { toUserId: userId }],
+      },
+      select: {
+        groupId: true,
+        fromUserId: true,
+        toUserId: true,
+        amount: true,
+      },
+      orderBy: { createdAt: 'asc' },
+    });
+  }
 }
 
 export const ledgerRepository = new LedgerRepository();
