@@ -9,6 +9,14 @@ import {
 } from '../lib/validation.js';
 
 export class GroupService {
+  private async requireGroupMembership(groupId: string, userId: string) {
+    const membership = await groupRepository.findMember(groupId, userId);
+    if (!membership || !membership.isActive) {
+      throw new AppError('FORBIDDEN', 'You are not a member of this group', 403);
+    }
+    return membership;
+  }
+
   async getGroupById(id: string) {
     const group = await groupRepository.findById(id);
     if (!group) {
@@ -23,6 +31,12 @@ export class GroupService {
       throw new AppError('GROUP_NOT_FOUND', 'Group not found', 404);
     }
     return group;
+  }
+
+  async getGroupByIdWithMembersForUser(groupId: string, userId: string) {
+    await this.getGroupById(groupId);
+    await this.requireGroupMembership(groupId, userId);
+    return this.getGroupByIdWithMembers(groupId);
   }
 
   async getAllGroups() {
@@ -172,6 +186,12 @@ export class GroupService {
 
   async getGroupMembers(groupId: string) {
     await this.getGroupById(groupId);
+    return groupRepository.getMembers(groupId);
+  }
+
+  async getGroupMembersForUser(groupId: string, userId: string) {
+    await this.getGroupById(groupId);
+    await this.requireGroupMembership(groupId, userId);
     return groupRepository.getMembers(groupId);
   }
 }

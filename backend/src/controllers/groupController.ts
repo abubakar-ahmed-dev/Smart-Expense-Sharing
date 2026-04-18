@@ -3,7 +3,10 @@ import { groupService } from '../services/groupService.js';
 
 export async function listGroups(req: Request, res: Response, next: NextFunction) {
   try {
-    const groups = await groupService.getAllGroups();
+    if (!req.user) {
+      throw new Error('User not authenticated');
+    }
+    const groups = await groupService.getUserGroups(req.user.id);
     res.status(200).json({
       success: true,
       data: groups,
@@ -28,8 +31,11 @@ export async function getUserGroups(req: Request, res: Response, next: NextFunct
 
 export async function getGroupById(req: Request, res: Response, next: NextFunction) {
   try {
+    if (!req.user) {
+      throw new Error('User not authenticated');
+    }
     const groupId = typeof req.params.groupId === 'string' ? req.params.groupId : req.params.groupId[0];
-    const group = await groupService.getGroupByIdWithMembers(groupId);
+    const group = await groupService.getGroupByIdWithMembersForUser(groupId, req.user.id);
     res.status(200).json({
       success: true,
       data: group,
@@ -153,8 +159,11 @@ export async function updateGroupMemberRole(
 
 export async function getGroupMembers(req: Request, res: Response, next: NextFunction) {
   try {
+    if (!req.user) {
+      throw new Error('User not authenticated');
+    }
     const groupId = typeof req.params.groupId === 'string' ? req.params.groupId : req.params.groupId[0];
-    const members = await groupService.getGroupMembers(groupId);
+    const members = await groupService.getGroupMembersForUser(groupId, req.user.id);
     res.status(200).json({
       success: true,
       data: members,

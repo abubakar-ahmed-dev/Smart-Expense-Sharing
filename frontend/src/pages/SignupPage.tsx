@@ -8,6 +8,7 @@ export default function SignupPage() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [phone, setPhone] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -21,7 +22,7 @@ export default function SignupPage() {
     setError(null);
 
     try {
-      await signup({ name, email, password });
+      await signup({ name, email, password, phone });
       navigate('/dashboard', { replace: true });
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : 'Signup failed');
@@ -55,6 +56,16 @@ export default function SignupPage() {
             value={email}
             onChange={(event) => setEmail(event.target.value)}
             placeholder="alice@example.com"
+            required
+          />
+
+          <label htmlFor="signup-phone">Phone number</label>
+          <input
+            id="signup-phone"
+            type="tel"
+            value={phone}
+            onChange={(event) => setPhone(event.target.value)}
+            placeholder="+1 (555) 123-4567"
             required
           />
 

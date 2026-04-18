@@ -5,9 +5,20 @@ import { userRepository } from '../repositories/userRepository.js';
 
 export class AuthService {
   async signup(input: CreateUserInput): Promise<AuthSessionData> {
+    // Ensure phone is provided for signup
+    if (!input.phone) {
+      throw new AppError('PHONE_REQUIRED', 'Phone number is required for signup', 400);
+    }
+
     const existingUser = await userRepository.findByEmail(input.email);
     if (existingUser) {
       throw new AppError('EMAIL_ALREADY_EXISTS', 'User with this email already exists', 409);
+    }
+
+    // Check if phone number already exists
+    const existingPhone = await userRepository.findPhoneByNumber(input.phone);
+    if (existingPhone) {
+      throw new AppError('PHONE_ALREADY_EXISTS', 'Phone number already exists', 409);
     }
 
     const user = await userRepository.create({
@@ -15,6 +26,9 @@ export class AuthService {
       name: input.name,
       passwordHash: hashPassword(input.password),
     });
+
+    // Create phone number record for the user
+    await userRepository.createPhone(user.id, { number: input.phone });
 
     return this.createSession(user.id, user.email, user.name);
   }

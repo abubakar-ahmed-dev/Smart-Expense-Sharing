@@ -66,7 +66,7 @@ export class UserRepository {
     });
   }
 
-  async create(data: Omit<CreateUserInput, 'password'> & { passwordHash: string }): Promise<PublicUser> {
+  async create(data: Omit<CreateUserInput, 'password' | 'phone'> & { passwordHash: string }): Promise<PublicUser> {
     return prisma.user.create({
       data: {
         email: data.email,
@@ -151,6 +151,20 @@ export class UserRepository {
         createdAt: true,
       },
       orderBy: { createdAt: 'asc' },
+    });
+  }
+
+  async findPhoneByNumber(phoneNumber: string) {
+    return prisma.userPhone.findFirst({
+      where: { number: phoneNumber },
+      select: {
+        id: true,
+        userId: true,
+        number: true,
+        label: true,
+        verified: true,
+        createdAt: true,
+      },
     });
   }
 }

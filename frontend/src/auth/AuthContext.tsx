@@ -11,6 +11,7 @@ interface SignupInput {
   name: string;
   email: string;
   password: string;
+  phone: string;
 }
 
 interface AuthContextValue {
@@ -67,10 +68,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       throw new Error('Password must be at least 6 characters.');
     }
 
+    if (!input.phone.trim()) {
+      throw new Error('Phone number is required.');
+    }
+
     const session = await apiClient.signup({
       name: input.name.trim(),
       email: input.email.trim().toLowerCase(),
       password: input.password,
+      phone: input.phone.trim(),
     });
 
     const nextSession = mapToSession(session);
